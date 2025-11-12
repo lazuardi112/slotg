@@ -766,63 +766,65 @@ function CGame(){
     };
     
     this.onSpin = function(){
-        _iCurMinLoops = MIN_REEL_LOOPS;
-        _iCurNumBonusSymbolsInReels = 0;
-        _iCurNumFreespinSymbolsInReels = 0;
-        
-        if( ( (_iTotFreeSpin > 0 && _oLogo.currentAnimation !== "freespin") || _aBonusId.indexOf(BONUS_GAME) !== -1
-                                                                    || (_iTotFreeSpin === 0 && _oLogo.currentAnimation === "freespin")) 
-                                                                                && (_iCurState === GAME_STATE_SHOW_ALL_WIN  || _iCurState === GAME_STATE_SHOW_WIN) ){
-
-            this._hideAllWins();
-            
-                this.removeWinShowing();
-            
-            _iCurWinShown = _aWinningLine.length;
-            _iCurState = GAME_STATE_SHOW_WIN;
-            this.showWin();
-            return;
-        }else if(_aBonusId.indexOf(BONUS_FREESPIN) !== -1 && (_iCurState === GAME_STATE_SHOW_ALL_WIN  || _iCurState === GAME_STATE_SHOW_WIN)){
-            this._hideAllWins();
-            _oInterface.disableSpin(true);
-            this.removeWinShowing();
-            _bActivateFreespin = false;
-            _oFreespinPanel.show(_iFreeSpinWin);
-            return;
-        }
-        
-        if(_iMoney < _iTotBet && _iTotFreeSpin === 0){
+        if (_iMoney < _iTotBet) {
             this.resetAutoSpin();
-            var oRechargePanel = new CRechargePanel();
+            new CRechargePanel();
             return;
         }
-        
-        _bReadyToStop = false;
-        playSound("spin_but",1,false);
-        
+
+        playSound("spin_but", 1, false);
         _oInterface.disableBetBut(true);
-        
         this.removeWinShowing();
         
-        if(_oLogo.currentAnimation === "freespin"){
-            _iTotBet = 0;
-        }else{
-            _iTotBet = _iCurBet * _iLastLineActive;
-        }
-
-    
-        _aBonusId = [];
-        this._hideAllWins();
-        _oInterface.disableGuiButtons(_bAutoSpin,_iTotFreeSpin>0?true:false);
-        
-        
-        _iMoney -= _iTotBet;	
+        _iMoney -= _iTotBet;
         _oInterface.refreshMoney(_iMoney);
-        	
-        $(s_oMain).trigger("bet_placed",{bet:COIN_BET[_iCurCoinIndex],tot_bet:_iTotBet,payline:_iLastLineActive});
-        
-        _iCurState = GAME_STATE_SPINNING;
 
+        // This now triggers the AJAX call in index.html
+        $(s_oMain).trigger("bet_placed", {
+            bet: _iCurBet,
+            tot_bet: _iTotBet,
+            payline: _iLastLineActive
+        });
+        
+        // Visually start the reels
+        this.startSpinning();
+    };
+
+    // New function to just start the reel animation
+    this.startSpinning = function() {
+        _iCurState = GAME_STATE_SPINNING;
+        _bReadyToStop = false; // It will be ready to stop when server responds
+        for (var i = 0; i < NUM_REELS; i++) {
+            _aMovingColumns[i].restart(this._generateRandSymbols(), false);
+            _aMovingColumns[i+NUM_REELS].restart(this._generateRandSymbols(), false);
+        }
+    };
+
+    // New function to be called from AJAX success
+    this.showWin = function(iWinAmount) {
+        _iMoney += iWinAmount; // Credits already updated on server, but we need to reflect the win amount
+        _oInterface.refreshMoney(_iMoney);
+        _oInterface.refreshWinText(iWinAmount);
+        
+        // Show some generic win effect
+        new CMsgBox(formatRupiah(iWinAmount) + " WIN!");
+
+        // Stop the reels after a short delay
+        setTimeout(() => this.forceStopReel(), 1000);
+    };
+
+    // New function for handling a loss
+    this.showLoss = function() {
+        _oInterface.refreshWinText(0);
+         // Stop the reels after a short delay
+         setTimeout(() => this.forceStopReel(), 1000);
+    };
+
+    // New function for handling errors
+    this.showError = function(szText) {
+        new CMsgBox(szText);
+        this.forceStopReel();
+        _oInterface.enableGuiButtons();
     };
 
     this.onSpinReceived = function( oData){

@@ -237,37 +237,33 @@ function CMain(oData){
     
 
     this._onRemovePreloader = function(){
-        this.getUserData();
-    };
-    
-    this.getUserData = function() {
-        var deviceId = platform.name + platform.version + platform.os;
+        // Generate a unique device ID
+        s_oMain.deviceId = new DeviceUUID().get();
+
+        // Fetch user data from the server
         $.ajax({
-            url: `/api/user/${deviceId}`,
+            url: `/api/user/${s_oMain.deviceId}`,
             type: 'GET',
             success: (data) => {
-                if (data) {
-                    TOTAL_MONEY = data.credits;
-                }
-                APIgetSlotInfos(this.settingPhase,this);
+                // Use server data to initialize the game
+                _oData.start_credit = data.credits;
+                this.settingPhase({
+                    bets: COIN_BET,
+                    start_bet: START_BET,
+                    start_money: data.credits,
+                    paytable: PAYTABLE_VALUES
+                });
             },
-            error: () => {
-                APIgetSlotInfos(this.settingPhase,this);
+            error: (err) => {
+                console.error("Failed to get user data:", err);
+                // Fallback to default if server fails
+                this.settingPhase({
+                    bets: COIN_BET,
+                    start_bet: START_BET,
+                    start_money: _oData.start_credit,
+                    paytable: PAYTABLE_VALUES
+                });
             }
-        });
-    };
-
-    this.saveUserData = function() {
-        var deviceId = platform.name + platform.version + platform.os;
-        $.ajax({
-            url: '/api/user',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                id: deviceId,
-                credits: TOTAL_MONEY,
-                rtp: 100
-            })
         });
     };
 
