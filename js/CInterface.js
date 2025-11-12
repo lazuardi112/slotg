@@ -611,15 +611,29 @@ function CInterface(iCurBet,iTotBet,oContainerSlot){
 		_oButFullscreen.setActive(s_bFullscreen);	
 	}	
     };	
-    this._onFullscreenRelease = function(){	
-        if(s_bFullscreen) { 	
-		_fCancelFullScreen.call(window.document);	
-	}else{	
-		_fRequestFullScreen.call(window.document.documentElement);	
-	}	
-		
-	sizeHandler();	
-    };	
+    this._onFullscreenRelease = function(){
+        if(s_bFullscreen) {
+            // Exit fullscreen
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            }
+            _fCancelFullScreen.call(window.document);
+        } else {
+            // Enter fullscreen
+            _fRequestFullScreen.call(window.document.documentElement).then(function() {
+                // After entering fullscreen, try to lock orientation on mobile
+                if (s_bMobile && screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape-primary').catch(function(error) {
+                        console.log("Orientation lock failed:", error);
+                    });
+                }
+            }).catch(function(error) {
+                console.log("Fullscreen request failed:", error);
+            });
+        }
+
+        sizeHandler();
+    };
     	
     this._onAudioToggle = function(){	
         Howler.mute(s_bAudioActive);	
