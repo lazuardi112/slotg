@@ -244,6 +244,7 @@ function CMain(oData){
         $.ajax({
             url: `/api/user/${s_oMain.deviceId}`,
             type: 'GET',
+            timeout: 5000, // Add a 5-second timeout
             success: (data) => {
                 // Use server data to initialize the game
                 _oData.start_credit = data.credits;
@@ -257,8 +258,8 @@ function CMain(oData){
                 });
             },
             error: (err) => {
-                console.error("Failed to get user data:", err);
-                // Fallback to default if server fails
+                console.error("Failed to get user data (or request timed out):", err);
+                // Fallback to default if server fails or times out
                 this.settingPhase({
                     bets: COIN_BET,
                     start_bet: START_BET,
