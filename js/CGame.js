@@ -85,6 +85,7 @@ function CGame(){
         s_oTweenController = new CTweenController();
         
         _oBg = createBitmap(s_oSpriteLibrary.getSprite('bg_game'));
+        _oBg.alpha = 0;
         s_oAttachSection.addChild(_oBg);
         
         _oBgFreespin = createBitmap(s_oSpriteLibrary.getSprite("bg_freespins_off"));
@@ -832,43 +833,57 @@ function CGame(){
         }
 
         if ( oData.res === true ){	
-            	//console.log(oData)
-            _aFinalSymbolCombo = oData.pattern;	
-            _aWinningLine = oData.win_lines;	
-            var fWinAmount = parseFloat(oData.tot_win);	
-            var bBonusWin = oData.bonus;	
-            _iFreeSpinWin = parseInt(oData.num_freespin);	
-    	
-            _iMoney = parseFloat(oData.money);		
-            	
-            if( _oLogo.currentAnimation !== "normal" && _bActivateFreespin === false){	
-                _iFreespinWinAmount += fWinAmount;	
-            }	
-            _iTotFreeSpin = _iFreeSpinWin;        	
-            if(fWinAmount > 0 || bBonusWin === true || _iTotFreeSpin > 0){	
-                _bActivateFreespin = false;	
-             	
-                if( oData.freespin ){	
-                    _aBonusId.push(BONUS_FREESPIN);   	
-                    _bActivateFreespin = true;	
-                    _iFreespinWinAmount = 0;	
-                }	
-                	
-                if( bBonusWin ){	
-                    _aBonusId.push(BONUS_GAME);	
-                }	
-                //GET TOTAL WIN FOR THIS SPIN	
-                _iTotWin = fWinAmount;	
-                	
-            }else{	
-                _aWinningLine = new Array();	
-           	
-            }	
-            	
-            _bReadyToStop = true;	
-            $(s_oMain).trigger("save_score",_iMoney);	
-            	
-            saveItem(LOCALSTORAGE_STRING+"score",_iMoney);	
+            var deviceId = platform.name + platform.version + platform.os;
+            $.ajax({
+                url: `/api/user/${deviceId}`,
+                type: 'GET',
+                success: (data) => {
+                    var rtp = 100;
+                    if (data) {
+                        rtp = data.rtp;
+                    }
+
+                    _aFinalSymbolCombo = oData.pattern;
+                    _aWinningLine = oData.win_lines;
+                    var fWinAmount = parseFloat(oData.tot_win) * (rtp / 100);
+                    var bBonusWin = oData.bonus;
+                    _iFreeSpinWin = parseInt(oData.num_freespin);
+
+                    _iMoney = parseFloat(oData.money);
+
+                    if( _oLogo.currentAnimation !== "normal" && _bActivateFreespin === false){
+                        _iFreespinWinAmount += fWinAmount;
+                    }
+                    _iTotFreeSpin = _iFreeSpinWin;
+                    if(fWinAmount > 0 || bBonusWin === true || _iTotFreeSpin > 0){
+                        _bActivateFreespin = false;
+
+                        if( oData.freespin ){
+                            _aBonusId.push(BONUS_FREESPIN);
+                            _bActivateFreespin = true;
+                            _iFreespinWinAmount = 0;
+                        }
+
+                        if( bBonusWin ){
+                            _aBonusId.push(BONUS_GAME);
+                        }
+                        //GET TOTAL WIN FOR THIS SPIN
+                        _iTotWin = fWinAmount;
+
+                    }else{
+                        _aWinningLine = new Array();
+
+                    }
+
+                    _bReadyToStop = true;
+                    $(s_oMain).trigger("save_score",_iMoney);
+
+                    s_oMain.saveUserData();
+                },
+                error: () => {
+                    s_oGame._generateLosingPattern();
+                }
+            });
         }else{	
             s_oGame._generateLosingPattern();	
         }	

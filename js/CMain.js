@@ -237,9 +237,39 @@ function CMain(oData){
     
 
     this._onRemovePreloader = function(){
-        APIgetSlotInfos(this.settingPhase,this);
+        this.getUserData();
     };
     
+    this.getUserData = function() {
+        var deviceId = platform.name + platform.version + platform.os;
+        $.ajax({
+            url: `/api/user/${deviceId}`,
+            type: 'GET',
+            success: (data) => {
+                if (data) {
+                    TOTAL_MONEY = data.credits;
+                }
+                APIgetSlotInfos(this.settingPhase,this);
+            },
+            error: () => {
+                APIgetSlotInfos(this.settingPhase,this);
+            }
+        });
+    };
+
+    this.saveUserData = function() {
+        var deviceId = platform.name + platform.version + platform.os;
+        $.ajax({
+            url: '/api/user',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                id: deviceId,
+                credits: TOTAL_MONEY,
+                rtp: 100
+            })
+        });
+    };
 
     this.settingPhase = function( oInfos){
         try{
