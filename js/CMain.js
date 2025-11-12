@@ -247,6 +247,8 @@ function CMain(oData){
             success: (data) => {
                 // Use server data to initialize the game
                 _oData.start_credit = data.credits;
+                TOTAL_MONEY = data.credits; // Make sure global money is set
+
                 this.settingPhase({
                     bets: COIN_BET,
                     start_bet: START_BET,

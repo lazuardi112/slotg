@@ -94,7 +94,7 @@ app.post('/api/spin', (req, res) => {
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
     // IMPORTANT: This is a highly insecure login. For demonstration purposes only.
-    if (username === 'admin' && password === 'password') {
+    if (username === 'admin' && password === 'admin123') {
         res.json({ success: true });
     } else {
         res.status(401).json({ success: false, message: 'Invalid credentials' });
