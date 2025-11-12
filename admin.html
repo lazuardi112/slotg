@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+
+    #login, #dashboard {
+      width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+    }
+
+    #dashboard {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="login">
+    <h1>Admin Login</h1>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button id="login-btn">Login</button>
+  </div>
+
+  <div id="dashboard">
+    <h1>Dashboard</h1>
+
+    <h2>Global RTP</h2>
+    <input type="number" id="global-rtp" placeholder="Global RTP">
+    <button id="save-global-rtp">Save</button>
+
+    <h2>User RTP</h2>
+    <input type="text" id="user-id" placeholder="User ID">
+    <input type="number" id="user-rtp" placeholder="User RTP">
+    <button id="save-user-rtp">Save</button>
+
+    <h2>User Credits</h2>
+    <input type="text" id="user-id-credits" placeholder="User ID">
+    <input type="number" id="user-credits" placeholder="User Credits">
+    <button id="save-user-credits">Save</button>
+  </div>
+
+  <script src="js/jquery-3.2.1.min.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

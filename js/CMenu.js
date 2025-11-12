@@ -17,6 +17,7 @@ function CMenu(){
     
     this._init = function(){
         _oBg = createBitmap(s_oSpriteLibrary.getSprite('bg_menu'));
+        _oBg.alpha = 0;
         s_oAttachSection.addChild(_oBg);
         
         var oSpriteLogo = s_oSpriteLibrary.getSprite("logo_menu");
@@ -164,6 +165,9 @@ function CMenu(){
 		_fCancelFullScreen.call(window.document);
 	}else{
 		_fRequestFullScreen.call(window.document.documentElement);
+                if(s_bMobile && screen.orientation){
+                    screen.orientation.lock('landscape');
+                }
 	}
 	
 	sizeHandler();

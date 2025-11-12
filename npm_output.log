@@ -1,0 +1,5 @@
+
+> slot-machine-zeus-treasures@1.0.0 start
+> node server.js
+
+Server is running on http://localhost:5001
